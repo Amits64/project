@@ -1,0 +1,17 @@
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: "nginx-prometheus-exporter"
+
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+    static_configs:
+      - targets: ["192.168.10.11:9113"]
+
+  - job_name: "nginx-fluentd"
+    static_configs:
+      - targets: ["192.168.10.11:24231"]
+
+rule_files:
+  - "rule/alerts.yml"
+  - "rule/alerts1.yml"
