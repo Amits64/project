@@ -265,7 +265,6 @@ First, let's make sure that all the dependencies are installed.
 
 Next, add GPG key.
 
-
     wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
 
 Add this repository for stable releases.
@@ -308,34 +307,42 @@ The next step is to install Fluentd and convert Nginx logs to Prometheus metrics
 First of all, we need to install the ruby programming language.
 
 
-apt install build-essential ruby-dev
+    apt install build-essential ruby-dev
+    
 Verify that ruby is installed successfully. You need at least a 2.7 ruby version.
 
 
-ruby --version
+    ruby --version
+    
 Now we can install the fluentd itself using gem, which is a standard way for ruby to distribute packages.
 
 
-gem install fluentd --no-doc
+    gem install fluentd --no-doc
+    
 Install the fluentd plugin to convert logs to prometheus metrics.
 
 
-gem install fluent-plugin-prometheus
+    gem install fluent-plugin-prometheus
+    
 Verify fluentd installation. You should get the latest version.
 
 
-fluentd --version
+    fluentd --version
+    
 Create a folder to place Fluentd Config.
 
 
-mkdir /etc/fluent/
+    mkdir /etc/fluent/
+    
 Let's update the Nginx access log to emit additional values.
 
 
-vim /etc/nginx/nginx.conf
+    vim /etc/nginx/nginx.conf
+    
 Add upstream_response_time at the end of the log. But better replace the whole string with mine to avoid any typos.
 
-/etc/nginx/nginx.conf
+    /etc/nginx/nginx.conf
+
 
     log_format custom '$remote_addr - $remote_user [$time_local] '
     '"$request" $status $body_bytes_sent '
@@ -351,7 +358,6 @@ Let's save and restart Nginx.
     systemctl restart nginx
 
 Now we need to create a regular expression to parse nginx access logs. First, let's get a sample from the log and use one of the online regex editors.
-
     
     tail -f /var/log/nginx/access.log
 
@@ -368,3 +374,245 @@ Paste your log sample and enter the regular expression. On the right-hand side, 
 
 Paste your log sample and enter the regular expression. On the right-hand side, you'll see the named parameters, such as status code, method, size, and others. All of them we will be able to convert to prometheus and use them as labels.
 
+Now let's create the Fluentd config.
+
+    vim /etc/fluent/fluent.conf
+
+You'll find the metric sections where we convert logs to prometheus metrics. For example, to measure latency, we use nginx_upstream_time_seconds_hist.
+
+    <source>
+    @type prometheus_tail_monitor
+    </source>
+    
+    <source>
+      @type prometheus
+    </source>
+    
+    <source>
+        @type tail
+        <parse>
+        @type regexp
+        expression /^(?<remote>[^ ]*) (?<host>[^ ]*) (?<user>[^ ]*) \[(?<time>[^\]]*)\] \"(?<method>\w+)(?:\s+(?<path>[^\"]*?)(?:\s+\S*)?)?\" (?<status_code>[^ ]*) (?<size>[^ ]*)(?:\s"(?<referer>[^\"]*)") "(?<agent>[^\"]*)" (?<urt>[^ ]*)$/
+            time_format %d/%b/%Y:%H:%M:%S %z
+            keep_time_key true
+            types size:integer,reqtime:float,uct:float,uht:float,urt:float
+        </parse>
+        tag nginx
+        path /var/log/nginx/access.log
+        pos_file /tmp/fluent_nginx.pos
+    </source>
+    <filter nginx>
+        @type prometheus
+    
+      <metric>
+        name nginx_size_bytes_total
+        type counter
+        desc nginx bytes sent
+        key size
+      </metric>
+    
+      <metric>
+        name nginx_request_status_code_total
+        type counter
+        desc nginx request status code
+        <labels>
+          method ${method}
+          path ${path}
+          status_code ${status_code}
+        </labels>
+      </metric>
+    
+      <metric>
+        name nginx_http_request_duration_seconds
+        type histogram
+        desc Histogram of the total time spent on receiving the response from the upstream server.
+        key urt
+        <labels>
+          method ${method}
+          path ${path}
+          status_code ${status_code}
+        </labels>
+      </metric>
+    
+    </filter>
+
+Create the last systemd service unit for fluentd to run it in the background. Let's run it as a root to grant access to Nginx logs. Of course, I would advise you to downgrade it to its own user.
+
+    [Unit]
+    Description=Fluentd
+    Wants=network-online.target
+    After=network-online.target
+    
+    StartLimitIntervalSec=0
+    
+    [Service]
+    User=root
+    Group=root
+    Type=simple
+    Restart=on-failure
+    RestartSec=5s
+    ExecStart=fluentd --config /etc/fluent/fluent.conf
+    
+    [Install]
+    WantedBy=multi-user.target
+
+As always, enable, start and check the status.
+
+    systemctl enable fluentd
+    systemctl start fluentd
+    systemctl status fluentd
+
+You can access Prometheus metrics on localhost:24231/metrics.
+
+    curl http://localhost:24231/metrics
+
+Let's add another Prometheus target to scrape fluentd.
+
+    vim /etc/prometheus/prometheus.yml
+
+Within prometheus.yml, add below configuration:
+
+    - job_name: "nginx-fluentd"
+      static_configs:
+        - targets: ["localhost:24231"]
+
+Restart Prometheus.
+
+    systemctl restart prometheus
+
+Now you should have 2 targets in the Prometheus UI.
+
+# Create Simple Flask App
+
+For the final test, let's create a simple Flask app to test our metrics.
+
+Install the pip package manager for python if you don't have it yet.
+
+    apt install python3-pip
+
+Install Flask, which is an http framework for Python.
+
+    pip install flask
+
+Install gunicorn, which is a production-grade server for flask applications.
+
+    pip install gunicorn
+
+Create a folder for the app.
+
+    mkdir /opt/myapp
+
+Now let's create the app itself.
+
+    vim /opt/myapp/app.py
+
+It's a very simple HTTP api that has a single /api/devices endpoint and supports get and post methods. Also, we simulate a load by generating the random sleep interval.
+
+    import random
+    import time
+    from flask import Flask, request
+    
+    
+    app = Flask(__name__)
+    
+    devices = [{
+        "id": 1,
+        "mac": "14-BA-17-74-24-1D",
+        "firmware": "2.0.6"
+    }, {
+        "id": 1,
+        "mac": "14-BA-17-74-24-1D",
+        "firmware": "2.0.6"
+    }]
+    
+    
+    @app.route("/api/devices", methods=['GET', 'POST'])
+    def hello_world():
+        sleep()
+        if request.method == 'POST':
+            return {'message': 'Device created!'}, 201
+        else:
+            return devices, 200
+    
+    
+    def sleep():
+        time.sleep(random.randint(0, 5) * 0.1)
+
+Create a dedicated user for the flask app.
+
+    sudo useradd --system --no-create-home --shell /bin/false myapp
+
+Update ownership on the folder.
+
+    chown -R myapp:myapp /opt/myapp
+
+Create the systemd service for the app.
+
+    vim /etc/systemd/system/myapp.service
+
+Add below configuration file:
+
+    [Unit]
+    Description=My App
+    Wants=network-online.target
+    After=network-online.target
+    
+    StartLimitIntervalSec=500
+    StartLimitBurst=5
+    
+    [Service]
+    User=myapp
+    Group=myapp
+    Type=simple
+    Restart=on-failure
+    RestartSec=5s
+    
+    WorkingDirectory=/opt/myapp
+    ExecStart=/usr/local/bin/gunicorn -w 4 'app:app' --bind 127.0.0.1:8282
+    
+    [Install]
+    WantedBy=multi-user.target
+
+Enable, start and check the app.
+
+    systemctl enable myapp
+    systemctl start myapp
+    systemctl status myapp
+
+Now, check if you can access the flask app locally.
+
+    curl -i localhost:8282/api/devices
+
+The next step is to use Nginx as a reverse proxy for our app.
+
+    vim /etc/nginx/conf.d/myapp.conf
+
+Let's also add a few headers just in case the flask needs to know where the request is coming from.
+
+    server {
+        listen 80;
+        server_name _;
+    
+        location / {
+            proxy_pass http://127.0.0.1:8282/;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-Host $host;
+            proxy_set_header X-Forwarded-Prefix /;
+        }
+    }
+
+Remove the default Nginx config with hello world page.
+
+    rm /etc/nginx/conf.d/default.conf
+
+Test and reload Nginx config.
+
+    nginx -t
+    systemctl reload nginx
+
+Now we can use the Nginx ip address to test the app. 
+
+    http://<ip>/api/devices
+
+Finally, let's create a few more Grafana dashboards to use these metrics.
