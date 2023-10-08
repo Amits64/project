@@ -1,3 +1,11 @@
+# Objective
+
+The provided script outlines a series of steps to set up a monitoring stack using Nginx, Prometheus, Grafana, and Fluentd to collect and visualize metrics from a simple Flask app. 
+
+# GitHub_repository: 
+
+    https://github.com/Amits64/khut-project/tree/main/prometheus
+
 # Install prerequisites
     sudo apt update
     sudo apt install curl gnupg2 ca-certificates lsb-release ubuntu-keyring
