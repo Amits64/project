@@ -59,7 +59,7 @@ To update the Nginx config without downtime, you can use reload command.
     
     systemctl reload nginx
 
-Now we can access http://<ip>:8080/status page.
+Now we can access http://ip_address:8080/status page.
 
     Active connections: 2 
     server accepts handled requests
