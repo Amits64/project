@@ -1,0 +1,25 @@
+---
+- name: Update APT package cache (for Debian/Ubuntu)
+  apt:
+    update_cache: yes
+  when: ansible_os_family == "Debian"  # Adjust for other OS families
+
+- name: Install NGINX
+  package:
+    name: nginx
+    state: present
+
+- name: Start NGINX service
+  service:
+    name: nginx
+    state: started
+    enabled: yes
+
+- name: Install NGINX (using a container image)
+  docker_container:
+    name: nginx-container
+    image: nginx:latest
+    state: started
+    published_ports:
+      - "90:90"
+
