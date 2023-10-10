@@ -316,7 +316,7 @@ I'm going to fill out the rest of the panels using the metrics that we retried f
 
 On the left-hand side, we have all the gauges, and on the right-hand side, all the counters. To make use of the counter, you need to apply a rate function, for example, to calculate a number of requests per second.
 
-Install Fluentd¶
+# Install Fluentd
 The next step is to install Fluentd and convert Nginx logs to Prometheus metrics.
 
 First of all, we need to install the ruby programming language.
