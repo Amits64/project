@@ -2,6 +2,10 @@
 
 The provided script outlines a series of steps to set up a monitoring stack using Nginx, Prometheus, Grafana, and Fluentd to collect and visualize metrics from a simple Flask app. 
 
+# Screenshot
+
+![image](https://github.com/Amits64/khut-project/assets/135766785/fcd4cf5e-cb94-4607-a5d0-38a2686b4047)
+
 # GitHub_repository: 
 
     https://github.com/Amits64/khut-project/tree/main/prometheus
@@ -623,4 +627,8 @@ Now we can use the Nginx ip address to test the app.
 
     http://<ip>/api/devices
 
-Finally, let's create a few more Grafana dashboards to use these metrics.
+Now, let's create a few more Grafana dashboards to use these metrics.
+
+Use the "ab" command for benchmarking and load testing the web servers.
+
+        ab -n 4000 -c 4000 http://localhost:80/
