@@ -4,6 +4,9 @@ The provided script outlines a series of steps to set up a monitoring stack usin
 
 # Screenshot
 
+![image](https://github.com/Amits64/khut-project/assets/135766785/f92314ea-bffa-4cb7-a94f-38c2336fc22c)
+
+
 ![image](https://github.com/Amits64/khut-project/assets/135766785/fcd4cf5e-cb94-4607-a5d0-38a2686b4047)
 
 # GitHub_repository: 
