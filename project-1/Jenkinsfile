@@ -1,44 +1,56 @@
 pipeline {
     agent any
+
     environment {
-        registry = "iamsauravsingh/python-app"
+        registry = 'amits64'
+        repository = 'my-webapp'
         registryCredential = 'dockerhub'
+        tag = "v${BUILD_NUMBER}"
     }
 
     stages {
         stage('git checkout') {
             steps {
-                git branch: 'project-1', url: 'https://github.com/iamsauravsingh7/kh-project.git'
+                git branch: 'main', url: 'https://github.com/Amits64/khut-project.git'
+                dir('project-1') {
+                }
             }
         }
         
         stage('Build docker image') {
             steps {
                 script {
-                  dockerImage = docker.build registry + ":v$BUILD_NUMBER"
-              }
+                    // Build the Docker image
+                    docker.build("${registry}/${repository}:${tag}", "-f project-1/Dockerfile .")
+                }
             }
         }
-        stage('Upload Image'){
-          steps{
-            script {
-              docker.withRegistry('', registryCredential) {
-                dockerImage.push("v$BUILD_NUMBER")
-                dockerImage.push('latest')
-              }
+
+        stage('Upload Image') {
+            steps {
+                script {
+                    // Push the Docker image to the registry
+                    docker.withRegistry('', registryCredential) {
+                        docker.image("${registry}/${repository}:${tag}").push()
+                    }
+                }
             }
-          }
         }
+
         stage('Remove Unused docker image') {
-          steps{
-            sh "docker rmi $registry:v$BUILD_NUMBER"
-          }
-        }
-        stage('Deploying container to Kubernetes') {
-            agent {label 'control-plane'}
-                steps {
-                     sh "helm install project-1 python-project --set appimage=${registry}:v${BUILD_NUMBER}"
+            steps {
+                script {
+                    sh "docker rmi ${registry}/${repository}:${tag}"
+                }
             }
-        }      
+        }
+
+        stage('Deploying container to Kubernetes') {
+            steps {
+                script {
+                    sh "helm install my-webapp project-1 --set appimage=${registry}/${repository}:${tag}"
+                }
+            }
+        }
     }
 }
