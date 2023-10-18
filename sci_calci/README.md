@@ -21,7 +21,6 @@ The project directory is organized as follows:
 - **script.js**: JavaScript code for calculator logic.
 - **Dockerfile**: Dockerfile for containerizing the application.
 - **requirements.txt**: List of Python packages required for the app.
-- **LICENSE**: License information (e.g., MIT License).
 - **README.md**: This file, providing project information.
 
 ## Getting Started
