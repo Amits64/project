@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: calci
+  labels: 
+    app: calci
+spec: 
+  replicas: 1
+  selector: 
+    matchLabels: 
+      app: calci
+  template: 
+    metadata: 
+      labels:
+        app: calci
+    spec: 
+      containers: 
+      - name: calci-app-container
+        image: amits64/calci:latest
+        ports: 
+        - containerPort: 5000
+          name: app-port
