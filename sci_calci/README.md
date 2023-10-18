@@ -4,6 +4,10 @@
 
 **Scientific Calculator (sci_calci)** is a web-based scientific calculator built with HTML, CSS, and JavaScript. It offers standard arithmetic operations as well as a wide range of scientific functions. This project also includes a Dockerized version for easy deployment.
 
+## Screenshot
+![image](https://github.com/Amits64/khut-project/assets/135766785/0429873b-1608-413c-8543-aad5f989dd19)
+
+
 ### Features
 
 - Standard arithmetic operations (addition, subtraction, multiplication, division).
