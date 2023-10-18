@@ -9,15 +9,20 @@ pipeline {
     }
 
     stages {
-        stage('git checkout') {
+        stage('Git Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/Amits64/khut-project.git'
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: 'main']],
+                    userRemoteConfigs: [[url: 'https://github.com/Amits64/khut-project.git']]
+                ])
                 dir('project-1') {
+                    // Define your Git-related operations here if needed
                 }
             }
         }
         
-        stage('Build docker image') {
+        stage('Build Docker Image') {
             steps {
                 script {
                     // Build the Docker image
@@ -37,7 +42,7 @@ pipeline {
             }
         }
 
-        stage('Remove Unused docker image') {
+        stage('Remove Unused Docker Image') {
             steps {
                 script {
                     sh "docker rmi ${registry}/${repository}:${tag}"
@@ -45,10 +50,11 @@ pipeline {
             }
         }
 
-        stage('Deploying container to Kubernetes') {
+        stage('Deploying Container to Kubernetes') {
             steps {
-                script {
-                    sh "helm install my-webapp project-1 --set appimage=${registry}/${repository}:${tag}"
+                dir('project-1/my-webapp') {
+                    // Install Helm chart (chart directory is specified here)
+                    sh "helm install my-webapp ./ -n my-webapp --set appimage=amits64/my-webapp:${tag} --set-file ca.crt=/etc/ca-certificates/update.d/jks-keystore"
                 }
             }
         }
