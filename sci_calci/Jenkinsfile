@@ -1,0 +1,62 @@
+pipeline {
+    agent any
+
+    environment {
+        registry = 'amits64'
+        repository = 'sci_calci'
+        registryCredential = 'dockerhub'
+        tag = "v${BUILD_NUMBER}"
+    }
+
+    stages {
+        stage('Git Checkout') {
+            steps {
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: 'main']],
+                    userRemoteConfigs: [[url: 'https://github.com/Amits64/khut-project.git']]
+                ])
+                dir('sci_calci') {
+                    // Define your Git-related operations here if needed
+                }
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Build the Docker image
+                    docker.build("${registry}/${repository}:${tag}", "-f sci_calci/Dockerfile .")
+                }
+            }
+        }
+
+        stage('Upload Image') {
+            steps {
+                script {
+                    // Push the Docker image to the registry
+                    docker.withRegistry('', registryCredential) {
+                        docker.image("${registry}/${repository}:${tag}").push()
+                    }
+                }
+            }
+        }
+
+        stage('Remove Unused Docker Image') {
+            steps {
+                script {
+                    sh "docker rmi ${registry}/${repository}:${tag}"
+                }
+            }
+        }
+
+        stage('Deploying Container to Kubernetes') {
+            steps {
+                dir('project-1/my-webapp') {
+                    // Install Helm chart (chart directory is specified here)
+                    sh "helm install sci_calci ./ -n sci_calci --set appimage=amits64/sci_calci:${tag} --set-file ca.crt=/etc/ca-certificates/update.d/jks-keystore"
+                }
+            }
+        }
+    }
+}
