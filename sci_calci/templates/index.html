@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scientific Calculator</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="calculator">
+        <h1>Scientific Calculator</h1>
+        <form method="POST" action="/calculate">
+            <input type="text" name="expression" id="expression" value="{{ request.form.expression }}" required>
+            <input type="submit" value="Calculate">
+        </form>
+        <p>Result: {{ result }}</p>
+    </div>
+</body>
+</html>
+
