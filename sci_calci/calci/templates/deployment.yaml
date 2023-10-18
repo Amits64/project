@@ -16,7 +16,7 @@ spec:
     spec: 
       containers: 
       - name: calci-app-container
-        image: amits64/calci:latest
+        image: {{ .Values.appimage }}
         ports: 
         - containerPort: 5000
           name: app-port
