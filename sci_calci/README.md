@@ -7,7 +7,6 @@ This deployment will focus on containerization using `Docker`, `Kubernetes` orch
 This tools should be installed on your vms:
 - Docker
 - Kubectl
-- Minikube
 - Helm
 - Jenkins
 
