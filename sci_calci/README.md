@@ -157,17 +157,7 @@ To install eksctl on Linux, follow these steps:
 
     Use this command to update the configuration of an existing cluster.
 
-## Step 4: Create a helm chart
-
-- To Create a sample helm chart for your python project use command.
-
-```
-helm create calci
-```
-
-- Now we have to write `deployment.yaml` and `service.yaml` files and copy them to python-project/template/ directory
-
-## Step 5: Implement Jenkins CI/CD Pipeline
+## Step 4: Implement Jenkins CI/CD Pipeline
 
 - Log in to Jenkins server and install some plugins such as:  
 a) Docker Pipeline  
@@ -270,10 +260,7 @@ pipeline {
 ```
 In this Jenkinsfile my kubernetes cluster is running on another vm so I have used that server as worker node. If your Kubernetes cluster is running on same server you do not have to create a worker node.
 
-- Now click on `Build Now` and after sometime you will get similar results like this: 
-![Grafana Dashboard](./Screenshots/Screenshot%20(86).png "python-application")
-
-## Step 6:Testing and Verification
+## Step 5: Testing and Verification
 
 Here we will verify that our application is successfully deployed on kubernetes or not.
 - Now go to the kubernetes cluster and run `kubectl get deployments` you will get something like this:
@@ -286,7 +273,7 @@ my-kube-prometheus-stack-kube-state-metrics   1/1     1            1           1
 my-kube-prometheus-stack-operator             1/1     1            1           116m
 ```
 
-## Step 7: Monitoring and Logging
+## Step 6: Monitoring and Logging
 
 In this Project we are using Prometheus and grafana to monitor our application. We are using helm charts to setup prometheus and Grafana. To setup prometheus and Grafana use command:
 ```bash
