@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         registry = 'amits64'
-        repository = 'sci_calci'
         registryCredential = 'dockerhub'
         tag = "v${BUILD_NUMBER}"
     }
@@ -21,12 +20,30 @@ pipeline {
                 }
             }
         }
-        
+
+        stage('Static Code Analysis') {
+            steps {
+                script {
+                    // Execute SonarQube scanner
+                    def sonarScannerImage = 'sonarsource/sonar-scanner-cli:latest'
+                    docker.image(sonarScannerImage).inside() {
+                        withSonarQubeEnv('SonarQube') {
+                            sh """
+                            sonar-scanner \
+                            -Dsonar.host.url=http://192.168.10.11:9000/ \
+                            -Dsonar.projectKey=project-2
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 script {
                     // Build the Docker image
-                    docker.build("${registry}/${repository}:${tag}", "-f sci_calci/Dockerfile .")
+                    docker.build("${registry}/calci:${tag}", "-f sci_calci/Dockerfile .")
                 }
             }
         }
@@ -36,7 +53,7 @@ pipeline {
                 script {
                     // Push the Docker image to the registry
                     docker.withRegistry('', registryCredential) {
-                        docker.image("${registry}/${repository}:${tag}").push()
+                        docker.image("${registry}/calci:${tag}").push()
                     }
                 }
             }
@@ -45,16 +62,25 @@ pipeline {
         stage('Remove Unused Docker Image') {
             steps {
                 script {
-                    sh "docker rmi ${registry}/${repository}:${tag}"
+                    sh "docker rmi ${registry}/calci:${tag}"
                 }
             }
         }
 
         stage('Deploying Container to Kubernetes') {
             steps {
-                dir('project-1/my-webapp') {
-                    // Install Helm chart (chart directory is specified here)
-                    sh "helm install sci_calci ./ -n sci_calci --set appimage=amits64/sci_calci:${tag} --set-file ca.crt=/etc/ca-certificates/update.d/jks-keystore"
+                dir('sci_calci/calci') {
+                    script {
+                        // Check if the release "calci" exists
+                        def releaseExists = sh(returnStatus: true, script: 'helm ls -n calci | grep -q "calci"') == 0
+                        if (releaseExists) {
+                            // Delete the release
+                            sh 'helm delete calci -n calci'
+                        }
+
+                        // Install Helm chart
+                        sh "helm install calci ./ -n calci --set appimage=amits64/calci:${tag} --set-file ca.crt=/etc/ca-certificates/update.d/jks-keystore"
+                    }
                 }
             }
         }
