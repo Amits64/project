@@ -72,14 +72,14 @@ pipeline {
                 dir('sci_calci/calci') {
                     script {
                         // Check if the release "calci" exists
-                        def releaseExists = sh(returnStatus: true, script: 'helm ls -n calci | grep -q "calci"') == 0
+                        def releaseExists = sh(returnStatus: true, script: 'helm ls | grep -q "calci"') == 0
                         if (releaseExists) {
                             // Delete the release
-                            sh 'helm delete calci -n calci'
+                            sh 'helm delete calci'
                         }
 
                         // Install Helm chart
-                        sh "helm install calci ./ -n calci --set appimage=amits64/calci:${tag} --set-file ca.crt=/etc/ca-certificates/update.d/jks-keystore"
+                        sh "helm install calci ./ --set appimage=amits64/calci:${tag} --set-file ca.crt=/etc/ca-certificates/update.d/jks-keystore"
                     }
                 }
             }
