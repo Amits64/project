@@ -61,21 +61,22 @@
 
 {{ template "prom_content_head" . }}
  <div class="prom_content_div">
-  <h1>Prometheus Overview - {{ .Params.instance }}</h1>
-
-  <h3>Ingested Samples</h3>
-  <div id="samplesGraph"></div>
-  <script>
-  new PromConsole.Graph({
-    node: document.querySelector("#samplesGraph"),
-    expr: "irate(prometheus_tsdb_head_samples_appended_total{job='prometheus',instance='{{ .Params.instance }}'}[5m])",
-    name: 'Ingested Samples',
-    yAxisFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
-    yHoverFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
-    yTitle: "Samples",
-    yUnits: "/s",
-  })
-  </script>
+<h1>Prometheus Overview - {{ .Params.instance }}</h1>
+<h3>Ingested Samples</h3>
+<div id="samplesGraph"></div>
+<script>
+// Assign the object to a variable
+const samplesGraph = new PromConsole.Graph({
+  node: document.querySelector("#samplesGraph"),
+  expr: "irate(prometheus_tsdb_head_samples_appended_total{job='prometheus',instance='{{ .Params.instance }}'}[5m])",
+  name: 'Ingested Samples',
+  yAxisFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
+  yHoverFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
+  yTitle: "Samples",
+  yUnits: "/s",
+});
+</script>
+</html>
 
   <h3>HTTP Server</h3>
   <div id="serverGraph"></div>
