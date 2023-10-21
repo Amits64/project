@@ -65,8 +65,8 @@
 <h3>Ingested Samples</h3>
 <div id="samplesGraph"></div>
 <script>
-// Assign the object to a variable
-const samplesGraph = new PromConsole.Graph({
+// Use the object for some purpose
+var graphObject = new PromConsole.Graph({
   node: document.querySelector("#samplesGraph"),
   expr: "irate(prometheus_tsdb_head_samples_appended_total{job='prometheus',instance='{{ .Params.instance }}'}[5m])",
   name: 'Ingested Samples',
@@ -75,23 +75,8 @@ const samplesGraph = new PromConsole.Graph({
   yTitle: "Samples",
   yUnits: "/s",
 });
+
+// You can perform further operations with 'graphObject' if needed
+// For example: graphObject.someMethod();
 </script>
 </html>
-
-  <h3>HTTP Server</h3>
-  <div id="serverGraph"></div>
-  <script>
-  new PromConsole.Graph({
-    node: document.querySelector("#serverGraph"),
-    expr: "irate(prometheus_http_request_duration_seconds_count{job='prometheus',instance='{{ .Params.instance }}'}[5m])",
-    name: '[[handler]]',
-    yAxisFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
-    yHoverFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
-    yTitle: "Requests",
-    yUnits: "/s",
-  })
-  </script>
- </div>
-{{ template "prom_content_tail" . }}
-
-{{ template "tail" }}
