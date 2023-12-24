@@ -10,10 +10,11 @@ Install Docker (if not already installed):
    
   ```bash
   docker pull sonarqube:latest
-
+  ```
 Run SonarQube Container:
 
 3. Start a SonarQube container with the following command:
 
   ```bash
   docker run -d --name sonarqube -p 9000:9000 -p 9092:9092 sonarqube:latest
+  ```
