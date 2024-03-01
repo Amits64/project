@@ -21,7 +21,7 @@
     "express-session": "^1.17.3",
     "fancy-log": "^2.0.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^7.6.0",
+    "mongoose": "^7.6.8",
     "multer": "^1.4.5-lts.1",
     "multer-storage-cloudinary": "^4.0.0",
     "node-downloader-helper": "^2.1.9",
