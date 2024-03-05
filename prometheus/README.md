@@ -635,4 +635,4 @@ Now, let's create a few more Grafana dashboards to use these metrics.
 
 Use the "ab" command for benchmarking and load testing the web servers.
 
-        ab -n 4000 -c 4000 http://localhost:80/
+    ab -n 4000 -c 4000 http://localhost:80/
