@@ -1,4 +1,4 @@
-FROM python:3.7-slim
+FROM python:3.14.0a3-slim
 WORKDIR /app
 ENV FLASK_APP=app.py
 ENV FLASK_RUN_HOST=0.0.0.0
